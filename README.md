@@ -17,7 +17,7 @@
     uv add numpy
     ```
 
-    如果使用 Python 3.13 以上版本，因為 ‵autioop‵ 從 3.13 版開始已經被移除了，要額外安裝 `autioop-lts` 套件補回來：
+    如果使用 Python 3.13 以上版本，因為 ‵autioop‵ 從 3.13 版開始已經被移除了，要額外安裝 [`autioop-lts`](https://github.com/jiaaro/pydub/issues/725#issuecomment-2439291764) 套件補回來：
 
     ```
     uv add audioop-lts
