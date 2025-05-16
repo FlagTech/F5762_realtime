@@ -3,6 +3,7 @@ let actionButton = null; // 開/關麥克風的按鈕
 let outputArea = null; // 顯示事件的輸出區域
 let statusLabel = null; // 顯示狀態的標籤
 let mic_on = false; // 麥克風狀態
+let dc = null; // DataChannel 物件
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 取得 HTML 元素
@@ -72,6 +73,35 @@ function appendStatus(text) {
     statusLabel.textContent += text;
 }
 
+function setEventHandler() {
+    // 處理代表伺服端事件的 "message" 事件
+    dc.addEventListener("message", (e) => {
+        // data 是 JSON 格式的 Realtime API 伺服端事件
+        const event = JSON.parse(e.data);
+        // 在輸出區域顯示事件類型供檢視流程
+        appendToOutput(event.type);
+
+        if(event.type === "session.created") {
+            // 傳送用戶端事件修改 session
+            dc.send(JSON.stringify({
+                type: "session.update",
+                session: {
+                    instructions: "使用繁體中文",
+                }
+            }));
+        }
+        else if (event.type === "conversation.item.created") {
+            // 生成新內容時先清除顯示內容的標籤
+            clearStatus();
+        }
+        else if (event.type === 
+            "response.audio_transcript.delta") {
+            // 生成文字完成顯示在標籤內
+            appendStatus(event.delta);
+        }
+    });
+}
+
 async function initWebRTC(stream) {
     // 取得臨時的 API 金鑰
     const response = await fetch("/key");
@@ -94,25 +124,10 @@ async function initWebRTC(stream) {
     appendStatus('使用 ' + stream.getTracks()[0].label);
   
     // 設定標籤為 "oai-events"，用來傳遞 Realtime API 事件的資料通道
-    const dc = pc.createDataChannel("oai-events");
-    // 處理代表伺服端事件的 "message" 事件
-    dc.addEventListener("message", (e) => {
-        // data 是 JSON 格式的 Realtime API 伺服端事件
-        const event = JSON.parse(e.data);
-        // 在輸出區域顯示事件類型供檢視流程
-        appendToOutput(event.type);
+    dc = pc.createDataChannel("oai-events");
 
-        if (event.type === "conversation.item.created") {
-            // 生成新內容時先清除顯示內容的標籤
-            clearStatus();
-        }
-        else if (event.type === 
-            "response.audio_transcript.delta") {
-            // 生成文字完成顯示在標籤內
-            appendStatus(event.delta);
-        }
-    });
-  
+    setEventHandler(); // 處理 DataChannel 事件
+
     // 取得目前設定（提供哪些媒體串流、格式等）的供應資訊（offer）
     const offer = await pc.createOffer();
     // 設定本地端的供應資訊
