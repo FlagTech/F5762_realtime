@@ -27,3 +27,9 @@
     ```
     uv add getchar
     ```
+
+- 最後使用 falsk 架設網頁伺服器
+
+    ```
+    uc add flask
+    ```
