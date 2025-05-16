@@ -22,3 +22,8 @@
     ```
     uv add audioop-lts
     ```
+- 非同步鍵盤偵測使用的是 `getchar` 套件
+
+    ```
+    uv add getchar
+    ```

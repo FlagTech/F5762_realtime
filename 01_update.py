@@ -7,6 +7,7 @@ async def main():
     async with client.beta.realtime.connect(
         model='gpt-4o-realtime-preview'
     ) as connection:
+        
         await connection.session.update(
             session={'modalities': ['text']},
         )

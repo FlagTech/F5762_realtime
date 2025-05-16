@@ -9,6 +9,7 @@ async def main():
     async with client.beta.realtime.connect(
         model="gpt-4o-realtime-preview"
     ) as connection:
+        
         # 更新 session設定僅回覆文字，不生成語音
         await connection.session.update(
             session={
