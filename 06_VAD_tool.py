@@ -3,9 +3,9 @@ from audio_util import SAMPLE_RATE
 from audio_util import AudioPlayerAsync
 from openai import AsyncOpenAI
 from getchar import getkeys
-from tools_utils import google_res
-from tools_utils import tools
-from tools_utils import call_tools
+from tool_utils import google_res
+from tool_utils import tools
+from tool_utils import call_tools
 import base64
 import asyncio
 

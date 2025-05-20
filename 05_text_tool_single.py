@@ -17,8 +17,6 @@ async def main():
         await connection.session.update(
             session={
                 'modalities': ['text'],
-                'tools': tools,
-                "tool_choice": "auto"
             }
         )
 
@@ -32,7 +30,11 @@ async def main():
                 }],
             }
         )
-        await connection.response.create()
+        await connection.response.create(
+            response={
+                'tools': tools
+            }
+        )
         
         async for event in connection:
             print(event.type)
@@ -45,7 +47,7 @@ async def main():
                     await connection.conversation.item.create(
                         item = msg
                     )
-                await connection.response.create()               
+                await connection.response.create()
 
 try:
     asyncio.run(main())
