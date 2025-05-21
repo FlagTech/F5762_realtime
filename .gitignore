@@ -11,3 +11,6 @@ wheels/
 
 # dotenv
 .env
+
+# mcp
+mcp_servers.json

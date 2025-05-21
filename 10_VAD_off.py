@@ -13,10 +13,9 @@ connection = None
 audio_player = AudioPlayerAsync()
 should_send_audio = asyncio.Event()
 connected = asyncio.Event()
-response_id = None
 
 async def handle_realtime_connection():
-    global connection, response_id
+    global connection
 
     client = AsyncOpenAI()
 
@@ -39,12 +38,9 @@ async def handle_realtime_connection():
             async for event in conn:
                 if event.type == "session.created":
                     connected.set()
-                # 記錄當前回應的 id
-                elif event.type == "response.created":
-                    response_id = event.response.id
-                # 清除回應的 id
-                elif event.type == "response.done":
-                    response_id = None
+                elif event.type == "session.updated":
+                    print("📢 ")
+                # 回應內容的語音也是一段一段送來
                 elif event.type == "response.audio.delta":
                     bytes_data = base64.b64decode(event.delta)
                     audio_player.add_data(bytes_data)
@@ -54,10 +50,12 @@ async def handle_realtime_connection():
                     audio_player.stop()
                 # 當回應內容的文字送完了，就印出來
                 elif (event.type == 
+                      "response.audio_transcript.delta"):
+                    print(event.delta, end="")
+                elif (event.type == 
                       "response.audio_transcript.done"):
-                    print(event.transcript)
+                    print('\n📢 ')                    
                 elif event.type == "error":
-                    print('*' * 30)
                     print(event.error.message)
 
         except asyncio.CancelledError:
@@ -122,18 +120,12 @@ async def main():
             if is_recording:
                 print("開始錄音<<再按 K 結束>")
                 should_send_audio.set()
-                # 先停止尚未結束的回應
-                if response_id:
-                    print('canceling...')
-                    await connection.response.cancel(
-                        response_id=response_id
-                    )                
                 # 停止播放回覆語音
                 audio_player.stop()
             else:
                 print("送出語音")
                 should_send_audio.clear()
-                # 由於關閉 VAD，所以要手動提交語音並且指示伺服端生成回應
+                # 由於關閉 VAD，所以要手動提交語音並要求指示生成回應
                 await connection.input_audio_buffer.commit()
                 await connection.response.create()
         elif key == "q":
