@@ -5,6 +5,9 @@ from openai import AsyncOpenAI
 from getchar import getkeys
 import base64
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 connection = None
 audio_player = AudioPlayerAsync()
@@ -32,13 +35,7 @@ async def handle_realtime_connection():
 
         try:
             async for event in conn:
-                item_id = '' # 取得回應項目的識別碼
-                if hasattr(event, "item_id"):
-                    item_id = event.item_id
-                elif hasattr(event, "item"):
-                    item_id = event.item.id
-                print(f'{event.type}:id({item_id})')
-
+                print(event.type)
                 if event.type == "session.created":
                     connected.set()
                 # 回應內容的語音也是一段一段送來

@@ -46,3 +46,12 @@ def call_tools(tool_calls):
         if tool_call.type == "function_call":
             msgs.append(make_tool_msg(tool_call))
     return msgs
+
+def show_tools_info(response):
+    for tool_call in response.output:
+        if tool_call.type == 'function_call':
+            tool_info = (
+                f'{tool_call.name}'
+                f'(**{tool_call.arguments})'
+            )
+            print(tool_info)

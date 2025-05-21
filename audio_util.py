@@ -8,15 +8,15 @@ import threading
 import pyaudio 
 import struct
 
-CHUNK_LENGTH_S = 0.05  # 100ms
-SAMPLE_RATE = 24000
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
+CHUNK_LENGTH_S = 0.05  # 50ms
+SAMPLE_RATE = 24000 # 24kHz
+FORMAT = pyaudio.paInt16 # 16-bit PCM
+CHANNELS = 1 # 單聲道
 
 def audio_to_pcm16_base64(audio_bytes: bytes) -> bytes:
     # load the audio file from the byte stream
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes))
-    print(f"Loaded audio: {audio.frame_rate=} {audio.channels=} {audio.sample_width=} {audio.frame_width=}")
+    # print(f"Loaded audio: {audio.frame_rate=} {audio.channels=} {audio.sample_width=} {audio.frame_width=}")
     # resample to 24kHz mono pcm16
     pcm_audio = audio.set_frame_rate(SAMPLE_RATE).set_channels(CHANNELS).set_sample_width(2).raw_data
     # return pcm_audio

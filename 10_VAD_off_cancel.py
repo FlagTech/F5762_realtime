@@ -3,24 +3,26 @@ from audio_util import SAMPLE_RATE
 from audio_util import AudioPlayerAsync
 from openai import AsyncOpenAI
 from getchar import getkeys
-from tool_utils import google_res
-from tool_utils import tools
-from tool_utils import call_tools
 import base64
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 connection = None
 audio_player = AudioPlayerAsync()
 should_send_audio = asyncio.Event()
 connected = asyncio.Event()
+response_id = None
 
 async def handle_realtime_connection():
-    global connection
+    global connection, response_id
 
     client = AsyncOpenAI()
 
     async with client.beta.realtime.connect(
         model="gpt-4o-realtime-preview",
+        # 可以透過 extra_query 傳遞額外的引數
     ) as conn:
         
         connection = conn
@@ -28,24 +30,21 @@ async def handle_realtime_connection():
         await connection.session.update(
             session={
                 "instructions": "使用繁體中文",
-                # 不能在建立連線時指定，一定要修改 session
-                'tools': tools,
-                "voice": "shimmer"
+                "voice": "shimmer",
+                "turn_detection": None
             }
         )
 
         try:
             async for event in conn:
-                item_id = '' # 取得回應項目的識別碼
-                if hasattr(event, "item_id"):
-                    item_id = event.item_id
-                elif hasattr(event, "item"):
-                    item_id = event.item.id
-                print(f'{event.type}:id({item_id})')
-
                 if event.type == "session.created":
                     connected.set()
-                # 回應內容的語音也是一段一段送來
+                # 記錄當前回應的 id
+                elif event.type == "response.created":
+                    response_id = event.response.id
+                # 清除回應的 id
+                elif event.type == "response.done":
+                    response_id = None
                 elif event.type == "response.audio.delta":
                     bytes_data = base64.b64decode(event.delta)
                     audio_player.add_data(bytes_data)
@@ -57,14 +56,9 @@ async def handle_realtime_connection():
                 elif (event.type == 
                       "response.audio_transcript.done"):
                     print(event.transcript)
-                elif event.type == "response.done":
-                    msgs = call_tools(event.response.output)
-                    if msgs == []: continue
-                    for msg in msgs:
-                        await connection.conversation.item.create(
-                            item = msg
-                        )
-                    await connection.response.create()               
+                elif event.type == "error":
+                    print('*' * 30)
+                    print(event.error.message)
 
         except asyncio.CancelledError:
             pass
@@ -126,11 +120,22 @@ async def main():
         if key == "k":
             is_recording = not is_recording
             if is_recording:
-                print("開始錄音")
+                print("開始錄音<<再按 K 結束>")
                 should_send_audio.set()
+                # 先停止尚未結束的回應
+                if response_id:
+                    print('canceling...')
+                    await connection.response.cancel(
+                        response_id=response_id
+                    )                
+                # 停止播放回覆語音
+                audio_player.stop()
             else:
-                print("停止錄音")
+                print("送出語音")
                 should_send_audio.clear()
+                # 由於關閉 VAD，所以要手動提交語音並且指示伺服端生成回應
+                await connection.input_audio_buffer.commit()
+                await connection.response.create()
         elif key == "q":
             print("結束程式")
             break
