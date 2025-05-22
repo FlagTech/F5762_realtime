@@ -1,8 +1,11 @@
 from openai import OpenAI
-from flask import Flask, render_template
+from flask import Flask
+from flask import render_template
 import time
+from dotenv import load_dotenv
 
-app = Flask(__name__)
+load_dotenv(override=True)
+
 client = OpenAI()
 
 def get_ephemeral_key():
@@ -18,7 +21,9 @@ def get_ephemeral_key():
     # 傳回臨時金鑰
     return response.client_secret.value
 
-# 顯示首頁
+app = Flask(__name__)
+
+# 設定靜態檔案的路徑
 @app.route('/')
 def index():
     return render_template('index.html')

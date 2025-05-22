@@ -1,9 +1,37 @@
-let mediaStream = null;
+let mediaStream = null; // 取得麥克風輸入的串流物件
 let actionButton = null; // 開/關麥克風的按鈕
 let outputArea = null; // 顯示事件的輸出區域
 let statusLabel = null; // 顯示狀態的標籤
 let mic_on = false; // 麥克風狀態
 let dc = null; // DataChannel 物件
+
+// 更新按鈕狀態和文字
+function updateButtonState(isActive) {
+    if (isActive) {
+        actionButton.textContent = '關閉麥克風';
+        actionButton.classList.remove('btn-primary');
+        actionButton.classList.add('btn-danger');
+    } else {
+        actionButton.textContent = '開啟麥克風';
+        actionButton.classList.remove('btn-danger');
+        actionButton.classList.add('btn-primary');
+    }
+}
+
+// 在輸出區域顯示新的一行文字
+function appendToOutput(text) {
+    outputArea.innerHTML += text + '<br/>';
+}
+
+// 清除狀態標籤內容
+function clearStatus() {
+    statusLabel.textContent = '';
+}
+
+// 在狀態標籤尾端添加文字
+function appendStatus(text) {
+    statusLabel.textContent += text;
+}
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 取得 HTML 元素
@@ -44,34 +72,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 });
-
-// 更新按鈕狀態和文字
-function updateButtonState(isActive) {
-    if (isActive) {
-        actionButton.textContent = '關閉麥克風';
-        actionButton.classList.remove('btn-primary');
-        actionButton.classList.add('btn-danger');
-    } else {
-        actionButton.textContent = '開啟麥克風';
-        actionButton.classList.remove('btn-danger');
-        actionButton.classList.add('btn-primary');
-    }
-}
-
-// 在輸出區域顯示新的一行文字
-function appendToOutput(text) {
-    outputArea.innerHTML += text + '<br/>';
-}
-
-// 清除狀態標籤內容
-function clearStatus() {
-    statusLabel.textContent = '';
-}
-
-// 在狀態標籤尾端添加文字
-function appendStatus(text) {
-    statusLabel.textContent += text;
-}
 
 function setEventHandler() {
     // 處理代表伺服端事件的 "message" 事件
