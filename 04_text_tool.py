@@ -1,4 +1,3 @@
-from tool_utils import google_res
 from tool_utils import tools
 from tool_utils import call_tools
 from tool_utils import show_tools_info
@@ -46,7 +45,7 @@ async def main():
                 show_tools_info(event.response)
                 for msg in msgs:
                     await connection.conversation.item.create(
-                        item = msg
+                        item=msg
                     )
                 await connection.response.create()               
 

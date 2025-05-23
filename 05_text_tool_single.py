@@ -1,4 +1,3 @@
-from tool_utils import google_res
 from tool_utils import tools
 from tool_utils import call_tools
 from tool_utils import show_tools_info
@@ -50,7 +49,9 @@ async def main():
                     await connection.conversation.item.create(
                         item = msg
                     )
-                await connection.response.create()               
+                await connection.response.create(
+                    response={'tools': tools}
+                )
 
 try:
     asyncio.run(main())
