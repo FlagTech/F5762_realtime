@@ -50,7 +50,7 @@ async def main():
                         item = msg
                     )
                 await connection.response.create(
-                    response={'tools': tools}
+                    # response={'tools': tools}
                 )
 
 try:
