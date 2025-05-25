@@ -57,7 +57,7 @@ async def handle_realtime_connection():
                     event.type == 
                     'conversation.item.'
                     'input_audio_transcription.completed'):
-                    print(event.transcript)
+                    print('> ' + event.transcript)
 
         except asyncio.CancelledError:
             pass

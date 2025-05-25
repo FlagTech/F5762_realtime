@@ -35,6 +35,9 @@ async def handle_realtime_connection():
                 "instructions": "使用繁體中文",
                 'tools': tools,
                 "voice": "shimmer",
+                'input_audio_transcription': {
+                    'model': 'whisper-1',
+                }
             }
         )
 
@@ -58,15 +61,18 @@ async def handle_realtime_connection():
                 elif (event.type == 
                       "conversation.item."
                       "input_audio_transcription.completed"):
-                    print(event.transcription)
+                    print('> ' + event.transcript)
                 elif event.type == "response.done":
-                    msgs = await call_tools(event.response.output)
+                    msgs = await call_tools(
+                        event.response.output
+                    )
                     if msgs == []: continue
                     show_tools_info(event.response)
                     for msg in msgs:
-                        await connection.conversation.item.create(
-                            item = msg
-                        )
+                        await (
+                            connection.conversation.item.create(
+                            item=msg
+                        ))
                     await connection.response.create()             
 
         except asyncio.CancelledError:
