@@ -21,7 +21,6 @@ async def handle_realtime_connection():
 
     async with client.beta.realtime.connect(
         model="gpt-4o-realtime-preview",
-        # 可以透過 extra_query 傳遞額外的引數
     ) as conn:
         
         connection = conn
@@ -48,7 +47,7 @@ async def handle_realtime_connection():
                 elif (event.type == 
                       "input_audio_buffer.speech_started"):
                     audio_player.stop()
-                # 當回應內容的文字送完了，就印出來
+                # 串流顯示回應內容
                 elif (event.type == 
                       "response.audio_transcript.delta"):
                     print(event.delta, end="")
@@ -118,7 +117,7 @@ async def main():
         if key == "k":
             is_recording = not is_recording
             if is_recording:
-                print("開始錄音<<再按 K 結束>")
+                print("開始錄音<<再按 K 結束>>")
                 should_send_audio.set()
                 # 停止播放回覆語音
                 audio_player.stop()
