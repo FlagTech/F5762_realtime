@@ -99,9 +99,6 @@ function setEventHandler() {
             // 生成文字完成顯示在標籤內
             appendStatus(event.delta);
         }
-        else if (event.type === 'error') {
-            appendToOutput(event.error.message);
-        }
     });
 }
 
