@@ -80,7 +80,7 @@ async def send_mic_audio():
                 await asyncio.sleep(0)
                 continue
 
-            # 等待按下 K 鍵才開始傳送音訊資料
+            # 等待按下 r 鍵才開始傳送音訊資料
             await should_send_audio.wait()
 
             data, _ = stream.read(read_size)
@@ -114,10 +114,10 @@ async def main():
             await asyncio.sleep(0.1)
             continue
         key = keys.pop().lower()
-        if key == "k":
+        if key == "r":
             is_recording = not is_recording
             if is_recording:
-                print("開始錄音<<再按 K 結束>>")
+                print("開始錄音<<再按 r 結束>>")
                 should_send_audio.set()
                 # 停止播放回覆語音
                 audio_player.stop()
