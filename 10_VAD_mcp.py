@@ -36,7 +36,7 @@ async def handle_realtime_connection():
                 'tools': tools,
                 "voice": "shimmer",
                 'input_audio_transcription': {
-                    'model': 'whisper-1',
+                    'model': 'gpt-4o-transcribe',
                 }
             }
         )

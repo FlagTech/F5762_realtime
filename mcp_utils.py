@@ -1,6 +1,7 @@
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamablehttp_client
 from contextlib import AsyncExitStack
 from contextlib import AsyncExitStack
 import os
@@ -23,22 +24,41 @@ class MCPClient:
             server_info: MCP 伺服器的連接資訊
         """
         if "url" in server_info[1]:
-            streams = await (
-                self.exit_stack.enter_async_context(
-                    sse_client(**server_info[1])
+            server_type = server_info[1].pop('type', 'sse')
+            if server_type == 'sse':
+                self.read, self.write = await (
+                    self.exit_stack.enter_async_context(
+                        sse_client(**server_info[1])
+                    )
                 )
-            )
+            elif server_type == 'http':
+                self.read, self.write, _ = await (
+                    self.exit_stack.enter_async_context(
+                        streamablehttp_client(**server_info[1])
+                    )
+                )
+            elif server_type == 'openai':
+                self.tools = [{
+                    'type': 'mcp',
+                    'server_label': server_info[0],
+                    'server_url': server_info[1]['url'],
+                    'require_approval': 'never', 
+                }]
+                print('-' * 20)
+                print(f'已啟用 {server_info[0]} 遠端 MCP 伺服器')
+                print('-' * 20)
+                return
         else:
             server_params = StdioServerParameters(**server_info[1])
 
-            streams = await (
+            self.read, self.write = await (
                 self.exit_stack.enter_async_context(
                     stdio_client(server_params)
                 )
             )
         self.session = await (
             self.exit_stack.enter_async_context(
-                ClientSession(*streams)
+                ClientSession(self.read, self.write)
             )
         )
 
@@ -51,7 +71,11 @@ class MCPClient:
             "type": "function",
             "name": tool.name,
             "description": tool.description,
-            "parameters": tool.inputSchema
+            "parameters": (
+                tool.inputSchema 
+                if "properties" in tool.inputSchema 
+                else tool.inputSchema | {'properties': {}}
+            )
         } for tool in tools]
         self.tool_names = [tool.name for tool in tools]
 
